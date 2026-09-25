@@ -138,6 +138,7 @@ typedef struct {
 	u8 display_off;
 #endif
 	u8 measureInterval;
+	u8 battery_type;
 }zcl_thermostatUICfgAttr_t;
 
 #ifdef ZCL_DIHUMIDIFICATION_CONTROL

@@ -17,6 +17,19 @@
 #include "lcd.h"
 
 measured_battery_t measured_battery;
+u8 battery_chemistry = BATTERY_CHEM_ALKALINE;
+
+// {empty, full} mV mapped onto 0..200 (0.5% units). The alkaline pair
+// reproduces the original (mv - BATTERY_SAFETY_THRESHOLD) / 4 curve exactly.
+static const u16 battery_curve_mv[][2] = {
+	[BATTERY_CHEM_ALKALINE] = {BATTERY_SAFETY_THRESHOLD, BATTERY_SAFETY_THRESHOLD + 800},
+	[BATTERY_CHEM_NIMH]     = {BATTERY_NIMH_EMPTY_MV, BATTERY_NIMH_FULL_MV},
+};
+
+u8 battery_set_chemistry(u8 chem) {
+	battery_chemistry = (chem > BATTERY_CHEM_NIMH) ? BATTERY_CHEM_ALKALINE : chem;
+	return battery_chemistry;
+}
 
 #define _BAT_SPEED_CODE_SEC_ //_attribute_ram_code_sec_ // for speed
 
@@ -56,8 +69,10 @@ void battery_detect(bool startup_flg)
 	} else {
 		measured_battery.average_mv = measured_battery.summ / measured_battery.cnt;
 	}
-	if(measured_battery.average_mv > BATTERY_SAFETY_THRESHOLD) {
-		battery_level = (measured_battery.average_mv - BATTERY_SAFETY_THRESHOLD) / 4;
+	u16 empty_mv = battery_curve_mv[battery_chemistry][0];
+	u16 full_mv = battery_curve_mv[battery_chemistry][1];
+	if(measured_battery.average_mv > empty_mv) {
+		battery_level = (u32)(measured_battery.average_mv - empty_mv) * 200 / (full_mv - empty_mv);
 		if(battery_level > 200)
 			battery_level = 200;
 	} else
