@@ -19,6 +19,11 @@ env:
   BOARDS: |
     ZTY0201|BOARD_RSH_HS03|Tuya:TY0201-z|ZTY0201z|-m0x1141 -i0x0203 -v0x10923001
     ZYZTH01|BOARD_ZYZTH01|Tuya:ZY-ZTH01-z|ZYZTH03pz|-m0x1002 -i0xd3a3 -v0x66993001
+  # BLE + Zigbee variants (USE_ZB=1, output in bin_zb/). No transition images:
+  # upstream does not ship stock-firmware entry points for these.
+  BOARDS_ZB: |
+    ZTY0201|BOARD_RSH_HS03|Tuya:TY0201-z
+    ZYZTH01|BOARD_ZYZTH01|Tuya:ZY-ZTH01-z
 
 jobs:
   build:
@@ -37,7 +42,9 @@ jobs:
             libssl-dev libncurses5 libncursesw5 build-essential python3
 
       - name: Unpack Telink SDK and tc32
-        run: make install
+        run: |
+          make install
+          make install USE_ZB=1
 
       - name: Build
         env:
@@ -58,16 +65,34 @@ jobs:
           done <<< "$BOARDS"
           ls -l bin/*.bin bin/*.zigbee
 
+      - name: Build BLE variants
+        env:
+          SWVER: ${{ github.event.inputs.version_suffix }}
+        run: |
+          set -euo pipefail
+          rm -f bin_zb/*.bin bin_zb/*.zigbee
+          while IFS='|' read -r project board zname; do
+            [ -n "$project" ] || continue
+            echo "::group::$project ($board, BLE)"
+            make -s -j clean USE_ZB=1
+            make -s -j USE_ZB=1 VERSION_BIN="$SWVER" PROJECT_NAME="$project"                  POJECT_DEF="-DBOARD=$board" ZNAME="$zname"
+            test -f "bin_zb/$project$SWVER.bin"
+            echo "::endgroup::"
+          done <<< "$BOARDS_ZB"
+          ls -l bin_zb/*.bin bin_zb/*.zigbee
+
       - uses: actions/upload-artifact@main
         with:
           name: firmware
           path: |
             bin/*.bin
             bin/*.zigbee
+            bin_zb/*.bin
+            bin_zb/*.zigbee
           if-no-files-found: error
 
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${GITHUB_REF_NAME}" bin/*.bin bin/*.zigbee --generate-notes
+        run: gh release create "${GITHUB_REF_NAME}" bin/*.bin bin/*.zigbee bin_zb/*.bin bin_zb/*.zigbee --generate-notes
