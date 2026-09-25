@@ -845,6 +845,12 @@ nv_sts_t zcl_thermostatConfig_save(int init)
 #ifdef ZCL_POWER_CFG
 				g_zcl_powerAttrs.batteryPercentage = (u8)measured_battery.level;
 #endif
+#if USE_DISPLAY
+				if(!g_zcl_thermostatUICfgAttrs.display_off) {
+					show_th();
+					update_lcd();
+				}
+#endif
 			}
 #endif
 			memcpy(&zcl_nv_thermostatUiCfg, &g_zcl_thermostatUICfgAttrs,

@@ -339,7 +339,7 @@ class CustomUserInterfaceCluster(CustomCluster, UserInterface):
 		CustomUserInterfaceCluster.cluster_id,
 		off_value=BatteryType.Alkaline,
 		on_value=BatteryType.NiMH,
-		translation_key="battery_type_nimh",
+		translation_key="battery_type",
 		fallback_name="Rechargeable batteries",
 	)
 	.add_to_registry()
@@ -565,6 +565,14 @@ class CustomIlluminanceLevelSensing(CustomCluster, IlluminanceLevelSensing):
 		#unit=LIGHT_LUX,
 		fallback_name="zlx target",
 		mode="box",
+	)
+	.switch(
+		CustomUserInterfaceCluster.AttributeDefs.battery_type.name,
+		CustomUserInterfaceCluster.cluster_id,
+		off_value=BatteryType.Alkaline,
+		on_value=BatteryType.NiMH,
+		translation_key="battery_type",
+		fallback_name="Rechargeable batteries",
 	)
 	.add_to_registry()
 )
