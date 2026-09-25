@@ -1,6 +1,7 @@
 #ifndef _DEVICE_H_
 #define _DEVICE_H_
 
+#include "app_cfg.h"
 #include "zcl_include.h"
 
 /**********************************************************************

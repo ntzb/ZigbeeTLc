@@ -820,6 +820,7 @@ nv_sts_t zcl_thermostatConfig_save(int init)
 #if defined(USE_BATTERY) && (USE_BATTERY == BATTERY_2AAA)
 		g_zcl_thermostatUICfgAttrs.battery_type =
 				battery_set_chemistry(g_zcl_thermostatUICfgAttrs.battery_type);
+		battery_recalc_level();
 #endif
 #if USE_TRIGGER
 		st = trigger_save(1);

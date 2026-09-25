@@ -11,10 +11,11 @@
 #define BATTERY_LOW_POWER			2000 //2.0v
 #define BATTERY_SAFETY_THRESHOLD	2200 //2.2v
 
-// Cell chemistry, selected at runtime through ZCL attribute 0x0108.
+// Cell chemistry, selected at runtime through ZCL attribute 0x0130.
 // Only offered where USE_BATTERY == BATTERY_2AAA.
 #define BATTERY_CHEM_ALKALINE		0
 #define BATTERY_CHEM_NIMH			1
+#define BATTERY_ALKALINE_SPAN_MV	800
 #define BATTERY_NIMH_EMPTY_MV		2250
 #define BATTERY_NIMH_FULL_MV		2700
 #define LOW_POWER_SLEEP_TIME_ms		180*1000 // 180 sec

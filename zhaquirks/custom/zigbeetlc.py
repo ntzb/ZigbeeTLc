@@ -13,6 +13,11 @@ from zigpy.zcl.clusters.hvac import ScheduleProgrammingVisibility, TemperatureDi
 from zigpy.zcl.clusters.measurement import IlluminanceLevelSensing, LevelStatus
 from zigpy.zcl.foundation import ZCLAttributeDef, ZCL_REPORTING_STATUS_ATTR
 
+class BatteryType(t.enum8):
+	"""Cell chemistry used by the battery gauge."""
+	Alkaline = 0x00
+	NiMH = 0x01
+
 class Display(t.enum8):
 	"""Turn off the display."""
 	Off = 0x01
@@ -90,7 +95,7 @@ class CustomUserInterfaceCluster(CustomCluster, UserInterface):
 		# Only present on 2xAAA devices. Default 0.
 		battery_type = ZCLAttributeDef(
 			id=0x0130,
-			type=t.enum8,
+			type=BatteryType,
 			access="rw",
 			is_manufacturer_specific=True,
 		)
@@ -328,6 +333,14 @@ class CustomUserInterfaceCluster(CustomCluster, UserInterface):
 		fallback_name="Temperature C/F",
 		off_value=TemperatureDisplayMode.Metric,
 		on_value=TemperatureDisplayMode.Imperial,
+	)
+	.switch(
+		CustomUserInterfaceCluster.AttributeDefs.battery_type.name,
+		CustomUserInterfaceCluster.cluster_id,
+		off_value=BatteryType.Alkaline,
+		on_value=BatteryType.NiMH,
+		translation_key="battery_type_nimh",
+		fallback_name="Rechargeable batteries",
 	)
 	.add_to_registry()
 )

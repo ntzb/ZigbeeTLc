@@ -21,7 +21,7 @@ measured_battery_t measured_battery;
 // {empty, full} mV mapped onto 0..200 (0.5% units). The alkaline pair
 // reproduces the original (mv - BATTERY_SAFETY_THRESHOLD) / 4 curve exactly.
 static const u16 battery_curve_mv[][2] = {
-	[BATTERY_CHEM_ALKALINE] = {BATTERY_SAFETY_THRESHOLD, BATTERY_SAFETY_THRESHOLD + 800},
+	[BATTERY_CHEM_ALKALINE] = {BATTERY_SAFETY_THRESHOLD, BATTERY_SAFETY_THRESHOLD + BATTERY_ALKALINE_SPAN_MV},
 	[BATTERY_CHEM_NIMH]     = {BATTERY_NIMH_EMPTY_MV, BATTERY_NIMH_FULL_MV},
 };
 
@@ -44,7 +44,7 @@ void battery_recalc_level(void)
 	u16 span_mv = battery_curve_mv[battery_chemistry][1] - empty_mv;
 #else
 	const u16 empty_mv = BATTERY_SAFETY_THRESHOLD;
-	const u16 span_mv = 800;
+	const u16 span_mv = BATTERY_ALKALINE_SPAN_MV;
 #endif
 	u16 battery_level = 0;
 	if(measured_battery.average_mv > empty_mv) {
