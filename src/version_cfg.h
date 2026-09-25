@@ -137,7 +137,10 @@
 #define APP_BUILD				0x18	//BCD app build "0.4"
 #else
 #define APP_RELEASE				0x01	//BCD app release "0.1"
-#define APP_BUILD				0x40	//BCD app build "3.9"
+#define APP_BUILD				0x41	//BCD app build "4.1"
+// 0x41 rather than upstream's 0x40: this fork must not report the same
+// file version as a pvvx release that contains different code. Rebase and
+// bump again when upstream moves past 0.1.4.1.
 #endif
 #define STACK_RELEASE			0x30	//BCD stack release 3.0
 #define STACK_BUILD				0x01	//BCD stack build 01
