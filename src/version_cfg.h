@@ -133,11 +133,18 @@
 #endif
 
 #if USE_BLE
-#define APP_RELEASE				0x00	//BCD app release "0.0"
-#define APP_BUILD				0x18	//BCD app build "0.4"
+// Upstream versions the BLE builds 0x00xx and the Zigbee-only ones 0x01xx, so
+// the two variants can never supersede each other over the air. This fork keeps
+// them in one ordered space: the BLE build sits one above the Zigbee-only one,
+// so a device can be moved back onto BLE. Bump the other past this to reverse.
+#define APP_RELEASE				0x01	//BCD app release "0.1"
+#define APP_BUILD				0x42	//BCD app build "4.2"
 #else
 #define APP_RELEASE				0x01	//BCD app release "0.1"
-#define APP_BUILD				0x40	//BCD app build "3.9"
+#define APP_BUILD				0x41	//BCD app build "4.1"
+// 0x41 rather than upstream's 0x40: this fork must not report the same
+// file version as a pvvx release that contains different code. Rebase and
+// bump again when upstream moves past 0.1.4.1.
 #endif
 #define STACK_RELEASE			0x30	//BCD stack release 3.0
 #define STACK_BUILD				0x01	//BCD stack build 01

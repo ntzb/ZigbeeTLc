@@ -57,7 +57,8 @@ Attr: 0x0103, INT16 (id:0x29), Comfort temperature maximum, in 0.01° steps, ran
 Attr: 0x0104, UINT16 (id:0x21), Comfort humidity minimum, in 1% steps, range 0..9999 (0..99.99%). Default 4000 (40.00%).<br>
 Attr: 0x0105, UINT16 (id:0x21), Comfort humidity maximum, in 1% steps, range 0..9999 (0..99.99%). Default 6000 (60.00%).<br>
 Attr: 0x0106, ENUM8 (id:0x30), Turn off the display. 1 - Display Off. Default 0 - Display On.<br>
-Attr: 0x0107, UINT8 (id:0x20), Measurement interval, range: 3..255 seconds. Default 10 seconds.
+Attr: 0x0107, UINT8 (id:0x20), Measurement interval, range: 3..255 seconds. Default 10 seconds.<br>
+Attr: 0x0130, ENUM8 (id:0x30), Battery type, 2xAAA devices only. 0 - Alkaline, 1 - NiMH rechargeable. Default 0.
 
 •	Not on all HW variants, turning off the display leads to a significant reduction in consumption. Better results are obtained by increasing the measurement interval.
 

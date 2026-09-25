@@ -10,6 +10,14 @@
 
 #define BATTERY_LOW_POWER			2000 //2.0v
 #define BATTERY_SAFETY_THRESHOLD	2200 //2.2v
+
+// Cell chemistry, selected at runtime through ZCL attribute 0x0130.
+// Only offered where USE_BATTERY == BATTERY_2AAA.
+#define BATTERY_CHEM_ALKALINE		0
+#define BATTERY_CHEM_NIMH			1
+#define BATTERY_ALKALINE_SPAN_MV	800
+#define BATTERY_NIMH_EMPTY_MV		2250
+#define BATTERY_NIMH_FULL_MV		2700
 #define LOW_POWER_SLEEP_TIME_ms		180*1000 // 180 sec
 
 // measured_battery.flag:
@@ -43,6 +51,10 @@ extern u32 adc_average; // = ADC value * 4, set get_adc_mv()
 void adc_channel_init(ADC_InputPchTypeDef p_ain); // in adc_drv.c
 u16 get_adc_mv(int flg); // in adc_drv.c
 
+#if defined(USE_BATTERY) && (USE_BATTERY == BATTERY_2AAA)
+u8 battery_set_chemistry(u8 chem);
+#endif
+void battery_recalc_level(void);
 void battery_detect(bool startup_flg);
 
 #endif /* _BATTERY_H_ */

@@ -1,6 +1,7 @@
 #ifndef _DEVICE_H_
 #define _DEVICE_H_
 
+#include "app_cfg.h"
 #include "zcl_include.h"
 
 /**********************************************************************
@@ -138,6 +139,9 @@ typedef struct {
 	u8 display_off;
 #endif
 	u8 measureInterval;
+#if defined(USE_BATTERY) && (USE_BATTERY == BATTERY_2AAA)
+	u8 battery_type;
+#endif
 }zcl_thermostatUICfgAttr_t;
 
 #ifdef ZCL_DIHUMIDIFICATION_CONTROL

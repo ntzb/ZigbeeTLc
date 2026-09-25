@@ -9,6 +9,7 @@
 #include "zcl_dehumidification_control.h"
 #endif
 #include "app_main.h"
+#include "battery.h"
 #include "lcd.h"
 #if USE_BLE
 #include "zigbee_ble_switch.h"
@@ -436,6 +437,9 @@ const zcl_thermostatUICfgAttr_t g_zcl_thermostatUICfgDefault = {
 		.temp_offset = 0,
 		.humi_offset = 0,
 		.measureInterval = READ_SENSOR_TIMER_SEC,
+#if defined(USE_BATTERY) && (USE_BATTERY == BATTERY_2AAA)
+		.battery_type = BATTERY_CHEM_ALKALINE,
+#endif
 #if	USE_DISPLAY
 		.TemperatureDisplayMode = 0,
 #if SHOW_SMILEY
@@ -469,6 +473,9 @@ const zclAttrInfo_t thermostat_ui_cfg_attrTbl[] =
 	{ ZCL_THERMOSTAT_UI_CFG_ATTRID_DISPLAY_OFF,   ZCL_DATA_TYPE_ENUM8,    ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE, (u8*)&g_zcl_thermostatUICfgAttrs.display_off },
 #endif
 	{ ZCL_THERMOSTAT_UI_CFG_ATTRID_MEASURE_INTERVAL,   ZCL_DATA_TYPE_UINT8,    ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE, (u8*)&g_zcl_thermostatUICfgAttrs.measureInterval },
+#if defined(USE_BATTERY) && (USE_BATTERY == BATTERY_2AAA)
+	{ ZCL_THERMOSTAT_UI_CFG_ATTRID_BATTERY_TYPE,   ZCL_DATA_TYPE_ENUM8,    ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE, (u8*)&g_zcl_thermostatUICfgAttrs.battery_type },
+#endif
 
 #if USE_TRIGGER
 	{ ZCL_THERMOSTAT_UI_CFG_ATTRID_TRIGGER_TRH_T,   ZCL_DATA_TYPE_INT16,    ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE, (u8*)&trg.temp_threshold },
@@ -810,6 +817,11 @@ nv_sts_t zcl_thermostatConfig_save(int init)
 		}
 		memcpy(&g_zcl_thermostatUICfgAttrs, &zcl_nv_thermostatUiCfg,
 				sizeof(g_zcl_thermostatUICfgAttrs));
+#if defined(USE_BATTERY) && (USE_BATTERY == BATTERY_2AAA)
+		g_zcl_thermostatUICfgAttrs.battery_type =
+				battery_set_chemistry(g_zcl_thermostatUICfgAttrs.battery_type);
+		battery_recalc_level();
+#endif
 #if USE_TRIGGER
 		st = trigger_save(1);
 #endif
@@ -825,6 +837,22 @@ nv_sts_t zcl_thermostatConfig_save(int init)
 			if(zcl_nv_thermostatUiCfg.measureInterval != g_zcl_thermostatUICfgAttrs.measureInterval) {
 				test_set_measure_longpoll_interval(g_zcl_thermostatUICfgAttrs.measureInterval);
 			}
+#if defined(USE_BATTERY) && (USE_BATTERY == BATTERY_2AAA)
+			if(zcl_nv_thermostatUiCfg.battery_type != g_zcl_thermostatUICfgAttrs.battery_type) {
+				g_zcl_thermostatUICfgAttrs.battery_type =
+						battery_set_chemistry(g_zcl_thermostatUICfgAttrs.battery_type);
+				battery_recalc_level();
+#ifdef ZCL_POWER_CFG
+				g_zcl_powerAttrs.batteryPercentage = (u8)measured_battery.level;
+#endif
+#if USE_DISPLAY
+				if(!g_zcl_thermostatUICfgAttrs.display_off) {
+					show_th();
+					update_lcd();
+				}
+#endif
+			}
+#endif
 			memcpy(&zcl_nv_thermostatUiCfg, &g_zcl_thermostatUICfgAttrs,
 					sizeof(g_zcl_thermostatUICfgAttrs));
 			st = nv_flashWriteNew(1, NV_MODULE_APP,  NV_ITEM_APP_THERMOSTAT_UI_CFG,
