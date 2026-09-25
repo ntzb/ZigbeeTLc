@@ -86,6 +86,14 @@ class CustomUserInterfaceCluster(CustomCluster, UserInterface):
 			access="rw",
 			is_manufacturer_specific=True,
 		)
+		# Cell chemistry used by the battery gauge. 0 - alkaline, 1 - NiMH.
+		# Only present on 2xAAA devices. Default 0.
+		battery_type = ZCLAttributeDef(
+			id=0x0130,
+			type=t.enum8,
+			access="rw",
+			is_manufacturer_specific=True,
+		)
 
 (
 	QuirkBuilder("MiaoMiaoCe", "MHO-C401N-z")

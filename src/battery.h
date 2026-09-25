@@ -36,7 +36,6 @@ typedef struct _measured_battery_t {
 } measured_battery_t;
 
 extern measured_battery_t measured_battery;
-extern u8 battery_chemistry;
 extern u32 adc_average; // = ADC value * 4, set get_adc_mv()
 
 #ifndef SHL_ADC_VBAT
@@ -51,7 +50,10 @@ extern u32 adc_average; // = ADC value * 4, set get_adc_mv()
 void adc_channel_init(ADC_InputPchTypeDef p_ain); // in adc_drv.c
 u16 get_adc_mv(int flg); // in adc_drv.c
 
+#if defined(USE_BATTERY) && (USE_BATTERY == BATTERY_2AAA)
 u8 battery_set_chemistry(u8 chem);
+#endif
+void battery_recalc_level(void);
 void battery_detect(bool startup_flg);
 
 #endif /* _BATTERY_H_ */

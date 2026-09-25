@@ -17,8 +17,7 @@
 #include "lcd.h"
 
 measured_battery_t measured_battery;
-u8 battery_chemistry = BATTERY_CHEM_ALKALINE;
-
+#if defined(USE_BATTERY) && (USE_BATTERY == BATTERY_2AAA)
 // {empty, full} mV mapped onto 0..200 (0.5% units). The alkaline pair
 // reproduces the original (mv - BATTERY_SAFETY_THRESHOLD) / 4 curve exactly.
 static const u16 battery_curve_mv[][2] = {
@@ -26,9 +25,37 @@ static const u16 battery_curve_mv[][2] = {
 	[BATTERY_CHEM_NIMH]     = {BATTERY_NIMH_EMPTY_MV, BATTERY_NIMH_FULL_MV},
 };
 
+// Kept private so the only path to the index is this clamp.
+static u8 battery_chemistry = BATTERY_CHEM_ALKALINE;
+
 u8 battery_set_chemistry(u8 chem) {
 	battery_chemistry = (chem > BATTERY_CHEM_NIMH) ? BATTERY_CHEM_ALKALINE : chem;
 	return battery_chemistry;
+}
+#endif
+
+// Maps the running average onto measured_battery.level. Split out of
+// battery_detect() so a chemistry change can be applied without touching the
+// ADC or the low-voltage shutdown path.
+void battery_recalc_level(void)
+{
+#if defined(USE_BATTERY) && (USE_BATTERY == BATTERY_2AAA)
+	u16 empty_mv = battery_curve_mv[battery_chemistry][0];
+	u16 span_mv = battery_curve_mv[battery_chemistry][1] - empty_mv;
+#else
+	const u16 empty_mv = BATTERY_SAFETY_THRESHOLD;
+	const u16 span_mv = 800;
+#endif
+	u16 battery_level = 0;
+	if(measured_battery.average_mv > empty_mv) {
+		battery_level = (u32)(measured_battery.average_mv - empty_mv) * 200 / span_mv;
+		if(battery_level > 200)
+			battery_level = 200;
+	}
+	measured_battery.level = (u8)battery_level;
+#if USE_BLE
+	measured_battery.batVal = (u8)(battery_level >> 1);
+#endif
 }
 
 #define _BAT_SPEED_CODE_SEC_ //_attribute_ram_code_sec_ // for speed
@@ -69,17 +96,6 @@ void battery_detect(bool startup_flg)
 	} else {
 		measured_battery.average_mv = measured_battery.summ / measured_battery.cnt;
 	}
-	u16 empty_mv = battery_curve_mv[battery_chemistry][0];
-	u16 full_mv = battery_curve_mv[battery_chemistry][1];
-	if(measured_battery.average_mv > empty_mv) {
-		battery_level = (u32)(measured_battery.average_mv - empty_mv) * 200 / (full_mv - empty_mv);
-		if(battery_level > 200)
-			battery_level = 200;
-	} else
-		battery_level = 0;
-    measured_battery.level = (u8)battery_level;
-#if USE_BLE
-    measured_battery.batVal = (u8)(battery_level >> 1);
-#endif
+	battery_recalc_level();
     measured_battery.flag = 0xff;
 }

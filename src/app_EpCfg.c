@@ -437,7 +437,7 @@ const zcl_thermostatUICfgAttr_t g_zcl_thermostatUICfgDefault = {
 		.temp_offset = 0,
 		.humi_offset = 0,
 		.measureInterval = READ_SENSOR_TIMER_SEC,
-#if USE_BATTERY == BATTERY_2AAA
+#if defined(USE_BATTERY) && (USE_BATTERY == BATTERY_2AAA)
 		.battery_type = BATTERY_CHEM_ALKALINE,
 #endif
 #if	USE_DISPLAY
@@ -473,7 +473,7 @@ const zclAttrInfo_t thermostat_ui_cfg_attrTbl[] =
 	{ ZCL_THERMOSTAT_UI_CFG_ATTRID_DISPLAY_OFF,   ZCL_DATA_TYPE_ENUM8,    ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE, (u8*)&g_zcl_thermostatUICfgAttrs.display_off },
 #endif
 	{ ZCL_THERMOSTAT_UI_CFG_ATTRID_MEASURE_INTERVAL,   ZCL_DATA_TYPE_UINT8,    ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE, (u8*)&g_zcl_thermostatUICfgAttrs.measureInterval },
-#if USE_BATTERY == BATTERY_2AAA
+#if defined(USE_BATTERY) && (USE_BATTERY == BATTERY_2AAA)
 	{ ZCL_THERMOSTAT_UI_CFG_ATTRID_BATTERY_TYPE,   ZCL_DATA_TYPE_ENUM8,    ACCESS_CONTROL_READ | ACCESS_CONTROL_WRITE, (u8*)&g_zcl_thermostatUICfgAttrs.battery_type },
 #endif
 
@@ -817,7 +817,7 @@ nv_sts_t zcl_thermostatConfig_save(int init)
 		}
 		memcpy(&g_zcl_thermostatUICfgAttrs, &zcl_nv_thermostatUiCfg,
 				sizeof(g_zcl_thermostatUICfgAttrs));
-#if USE_BATTERY == BATTERY_2AAA
+#if defined(USE_BATTERY) && (USE_BATTERY == BATTERY_2AAA)
 		g_zcl_thermostatUICfgAttrs.battery_type =
 				battery_set_chemistry(g_zcl_thermostatUICfgAttrs.battery_type);
 #endif
@@ -836,13 +836,13 @@ nv_sts_t zcl_thermostatConfig_save(int init)
 			if(zcl_nv_thermostatUiCfg.measureInterval != g_zcl_thermostatUICfgAttrs.measureInterval) {
 				test_set_measure_longpoll_interval(g_zcl_thermostatUICfgAttrs.measureInterval);
 			}
-#if USE_BATTERY == BATTERY_2AAA
+#if defined(USE_BATTERY) && (USE_BATTERY == BATTERY_2AAA)
 			if(zcl_nv_thermostatUiCfg.battery_type != g_zcl_thermostatUICfgAttrs.battery_type) {
 				g_zcl_thermostatUICfgAttrs.battery_type =
 						battery_set_chemistry(g_zcl_thermostatUICfgAttrs.battery_type);
-				battery_detect(0);
-#if USE_DISPLAY
-				update_lcd();
+				battery_recalc_level();
+#ifdef ZCL_POWER_CFG
+				g_zcl_powerAttrs.batteryPercentage = (u8)measured_battery.level;
 #endif
 			}
 #endif
